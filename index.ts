@@ -19,12 +19,16 @@ function go() {
   const DIMENSION = 24;
   const SLOT_COUNT = DIMENSION * DIMENSION;
 
+  const main = document.getElementsByTagName('main')[0];
   const parent = document.getElementById('grid-container');
   const glassPane = document.getElementById('glass-pane');
 
   const cp = (obj) => JSON.parse(JSON.stringify(obj));
 
   const getBoundingClientRect = (element) => {
+    if (!element) {
+      return {};
+    }
     var rect = element.getBoundingClientRect();
     return {
       top: rect.top,
@@ -66,14 +70,23 @@ function go() {
     return e;
   };
 
-  // One-time render the grid.
-  for (let r = 0; r < DIMENSION; ++r) {
-    for (let c = 0; c < DIMENSION; ++c) {
-      parent.appendChild(ce({ r, c }));
+  function renderGrid(rows, columns, gap) {
+    let df = document.createDocumentFragment();
+    for (let r = 0; r < rows; ++r) {
+      for (let c = 0; c < columns; ++c) {
+        df.appendChild(ce({ r, c }));
+      }
     }
+    parent.setAttribute('class', `base-${rows}`);
+    parent.innerHTML = '';
+    parent.appendChild(df);
+    parent.style.gridGap = gap ? `${gap}px` : '4px';
   }
 
   const getGridObject = (sl, clX, clY) => {
+    if (!sl) {
+      return null;
+    }
     let bcr = getBoundingClientRect(sl);
     bcr.row = parseInt(sl.getAttribute('data-row'));
     bcr.col = parseInt(sl.getAttribute('data-column'));
@@ -124,6 +137,9 @@ function go() {
     let firstNode = getGridObject(getSlotNode(obj.first.row, obj.first.col));
     let lastNode = getGridObject(getSlotNode(obj.last.row, obj.last.col));
 
+    if (!firstNode || !lastNode) {
+      return null;
+    }
     console.log(firstNode, lastNode);
 
     let topLeftPoint = topLeft(firstNode, lastNode);
@@ -143,7 +159,37 @@ function go() {
     .filter((i, indx) => indx < 12)
     .map(getGridObject);
 
-  let state = { slots: [], slotNodes: [] };
+  let state = { slots: [], slotNodes: [], baseGrid: 24, gridGap: 4 };
+
+  function renderSlotMarker(obj) {
+    const node = cs({
+      row: parseInt(obj.first.row),
+      col: parseInt(obj.first.col),
+      rowSpan: Math.max(
+        parseInt(obj.last.row) - parseInt(obj.first.row) + 1,
+        1
+      ),
+      colSpan: Math.max(
+        parseInt(obj.last.col) - parseInt(obj.first.col) + 1,
+        1
+      ),
+    });
+    console.log(node);
+    return updateSlotNode(node, obj);
+  }
+
+  function updateSlotNode(node, obj) {
+    let props = cp(obj);
+    if (props.first && props.last) {
+      requestAnimationFrame(() => {
+        const str = getSlotStyleForGlassPane(props);
+        if (str) {
+          node.setAttribute('style', str);
+        }
+      });
+    }
+    return node;
+  }
 
   function addSlot(obj) {
     const slot = {
@@ -163,17 +209,49 @@ function go() {
 
     state.slots.push(slot);
 
-    const sNode = cs(slot);
-    console.log('getSlotStyleForClassPane ', obj);
-    sNode.setAttribute('style', getSlotStyleForGlassPane(obj));
+    // Need to update state to reflect that we're done....
+    delete state.currentSlotMarker;
 
-    state.slotNodes.push(sNode);
-    glassPane.appendChild(sNode);
+    state.slotNodes.push(state.currentSlotMarker);
+  }
+
+  function resetStateForBaseGridChange(dim) {
+    console.log('resetStateForBaseGridChange %s, %o', dim, cp(state));
+    state.baseGrid = dim;
+    glassPane.innerHTML = '';
+    parent.innerHTML = '';
+    delete state.currentSlotMarker;
+    delete state.lastMouseDown;
+    delete state.lastMouseOver;
+    renderGrid(dim, dim, state.gridGap);
   }
 
   const mouseDowns = fromEvent(parent, 'mousedown');
-  const mouseUps = fromEvent(window, 'mouseup');
+  const mouseUps = fromEvent(main, 'mouseup');
   const mouseOvers = fromEvent(parent, 'mouseover');
+
+  const baseGridDimension = fromEvent(
+    document.getElementById('base-grid-selector'),
+    'change'
+  ).subscribe((evt) => {
+    resetStateForBaseGridChange(Number(evt.target.value));
+  });
+
+  const baseGridGap = fromEvent(
+    document.getElementById('base-grid-gap'),
+    'change'
+  ).subscribe((evt) => {
+    state.gridGap = Number(evt.target.value);
+    resetStateForBaseGridChange(state.baseGrid);
+  });
+
+  const resetGrid = fromEvent(
+    document.getElementById('reset-grid'),
+    'click'
+  ).subscribe((evt) => {
+    state = { slots: [], slotNodes: [], baseGrid: 24, gridGap: 4 };
+    resetStateForBaseGridChange(state.baseGrid);
+  });
 
   const mouseObserver = mouseDowns.pipe(
     map((evt) => {
@@ -183,7 +261,7 @@ function go() {
     }),
     switchMap((evt) => {
       return mouseOvers.pipe(
-        debounceTime(20),
+        debounceTime(30),
         map((over) => {
           over.preventDefault();
           return getGridObject(over.target, over.clientX, over.clientY);
@@ -199,6 +277,21 @@ function go() {
 
   mouseSubscriber.subscribe((evt) => {
     state.lastMouseOver = evt;
+
+    if (!state.currentSlotMarker) {
+      state.currentSlotMarker = renderSlotMarker({
+        first: state.lastMouseDown,
+        last: state.lastMouseOver,
+      });
+      requestAnimationFrame(() =>
+        glassPane.appendChild(state.currentSlotMarker)
+      );
+    } else {
+      updateSlotNode(state.currentSlotMarker, {
+        first: state.lastMouseDown,
+        last: state.lastMouseOver,
+      });
+    }
     console.log('over ', cp(evt));
   });
 
@@ -212,6 +305,8 @@ function go() {
     delete state.lastMouseDown;
     delete state.lastMouseOver;
   });
+
+  renderGrid(DIMENSION, DIMENSION);
 }
 
 go();
