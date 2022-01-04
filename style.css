@@ -9,13 +9,11 @@ header {
   align-items: center;
 }
 main {
-  width: 96vw;
+  width: 90vw;
   height: 90vh;
-  /* padding: 0.25em; */
   margin: auto;
   background-color: #cee6de;
   position: relative;
-  border: 1px solid blue;
 }
 
 #grid-container {
@@ -53,6 +51,10 @@ main {
 }
 #grid-container > div.slot {
   background-color: #f2f2f2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
   /* aspect-ratio: 1 / 1; */
 }
 

@@ -50,11 +50,11 @@ export default class SlotBlock extends HTMLElement {
   }
 
   get column() {
-    return this.getAttribute('data-column');
+    return parseInt(this.getAttribute('data-column'));
   }
 
   get row() {
-    return this.getAttribute('data-row');
+    return parseInt(this.getAttribute('data-row'));
   }
 
   get slotId() {

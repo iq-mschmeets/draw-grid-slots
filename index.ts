@@ -193,8 +193,8 @@ function go() {
       return;
     }
     const slot = {
-      row: obj.node.row, //parseInt(obj.first.row),
-      col: obj.node.col, //parseInt(obj.first.col),
+      row: obj.node.row,
+      col: obj.node.col,
       rowSpan: Math.max(
         parseInt(obj.last.row) - parseInt(obj.first.row) + 1,
         1
@@ -262,7 +262,6 @@ function go() {
   const mouseObserver = mouseDowns.pipe(
     map((evt) => {
       state.lastMouseDown = getGridObject(evt.target, evt.clientX, evt.clientY);
-      console.log('mousedown ', cp(state.lastMouseDown));
       return evt;
     }),
     switchMap((evt) => {
@@ -304,17 +303,17 @@ function go() {
         last: state.lastMouseOver,
       });
     }
-    console.log('over ', cp(evt));
   });
 
   mouseUps.subscribe((e) => {
     let local = cp(state);
-    console.log('mouseUp ', cp(local));
+
     addSlot({
       first: local.lastMouseDown,
       last: local.lastMouseOver,
       node: local.currentSlotMarker,
     });
+
     delete state.lastMouseDown;
     delete state.lastMouseOver;
     delete state.currentSlotMarker;
