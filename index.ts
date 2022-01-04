@@ -55,12 +55,11 @@ function go() {
     e.setAttribute('data-column', props.c + 1);
     e.setAttribute('data-row', props.r + 1);
     e.classList.add('slot');
-    e.innerText = `r:${props.r + 1} c:${props.c + 1}`;
+    e.innerText = `r:${props.r} c:${props.c}`;
     return e;
   };
 
   const csb = (props) => {
-    // let e = document.createElement('slot-block');
     let e = new SlotBlock();
     e.setAttribute('data-column', props.col);
     e.setAttribute('data-row', props.row);
@@ -75,7 +74,7 @@ function go() {
     let df = document.createDocumentFragment();
     for (let r = 0; r < rows; ++r) {
       for (let c = 0; c < columns; ++c) {
-        df.appendChild(ce({ r, c }));
+        df.appendChild(ce({ r: r + 1, c: c + 1 }));
       }
     }
     parent.setAttribute('class', `base-${rows}`);
@@ -102,10 +101,15 @@ function go() {
     return bcr;
   };
 
+  const getGridTable = () =>
+    Array.from(parent.querySelectorAll('.slot'))
+      .filter((i, indx) => indx < 12)
+      .map(getGridObject);
+
+  let state = { slots: [], slotNodes: [], baseGrid: 24, gridGap: 4 };
+
   const PARENT_X = getGridObject(parent).x;
   const PARENT_Y = getGridObject(parent).y;
-
-  console.log(PARENT_X, PARENT_Y);
 
   function getStyleForSlot(slot) {
     if (slot != null) {
@@ -154,12 +158,6 @@ function go() {
     return st;
   };
 
-  const GridTable = Array.from(parent.querySelectorAll('.slot'))
-    .filter((i, indx) => indx < 12)
-    .map(getGridObject);
-
-  let state = { slots: [], slotNodes: [], baseGrid: 24, gridGap: 4 };
-
   function renderSlotMarker(obj) {
     const node = csb({
       row: parseInt(obj.first.row),
@@ -191,6 +189,9 @@ function go() {
   }
 
   function addSlot(obj) {
+    if (!obj) {
+      return;
+    }
     const slot = {
       row: obj.node.row, //parseInt(obj.first.row),
       col: obj.node.col, //parseInt(obj.first.col),
@@ -208,11 +209,6 @@ function go() {
     };
 
     state.slots.push(slot);
-
-    // Need to update state to reflect that we're done....
-    //delete state.currentSlotMarker;
-
-    //state.slotNodes.push(state.currentSlotMarker);
   }
 
   function resetStateForBaseGridChange(dim) {
@@ -226,6 +222,9 @@ function go() {
     renderGrid(dim, dim, state.gridGap);
   }
 
+  ////////////////////////////////////////////////////////
+  // BEGIN observable section.
+  ////////////////////////////////////////////////////////
   const mouseDowns = fromEvent(parent, 'mousedown');
   const mouseUps = fromEvent(main, 'mouseup');
   const mouseOvers = fromEvent(parent, 'mouseover');
@@ -320,6 +319,10 @@ function go() {
     delete state.lastMouseOver;
     delete state.currentSlotMarker;
   });
+
+  ////////////////////////////////////////////////////////
+  // END observable section.
+  ////////////////////////////////////////////////////////
 
   renderGrid(DIMENSION, DIMENSION);
 }

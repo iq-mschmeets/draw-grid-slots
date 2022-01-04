@@ -9,12 +9,13 @@ header {
   align-items: center;
 }
 main {
-  width: 97vw;
-  height: 99vh;
+  width: 96vw;
+  height: 90vh;
   padding: 0.25em;
   margin: auto;
   background-color: #cee6de;
   position: relative;
+  border: 1px solid blue;
 }
 
 #grid-container {
