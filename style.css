@@ -55,7 +55,13 @@ main {
   /* aspect-ratio: 1 / 1; */
 }
 
-#glass-pane > div.slot-node {
+slot-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+}
+
+#glass-pane > slot-block.slot-node {
   background-color: cadetblue;
   position: absolute;
 }

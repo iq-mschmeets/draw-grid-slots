@@ -1,5 +1,5 @@
 import './style.css';
-
+import SlotBlock from './SlotBlock.js';
 import {
   of,
   map,
@@ -60,13 +60,15 @@ function go() {
     return e;
   };
 
-  const cs = (props) => {
-    let e = document.createElement('div');
+  const csb = (props) => {
+    // let e = document.createElement('slot-block');
+    let e = new SlotBlock();
     e.setAttribute('data-column', props.col);
     e.setAttribute('data-row', props.row);
     e.setAttribute('data-slot-id', props.slotId);
     e.classList.add('slot-node');
-    e.innerText = `r:${props.row} c:${props.col}`;
+
+    // e.innerText = `r:${props.row} c:${props.col}`;
     return e;
   };
 
@@ -162,7 +164,7 @@ function go() {
   let state = { slots: [], slotNodes: [], baseGrid: 24, gridGap: 4 };
 
   function renderSlotMarker(obj) {
-    const node = cs({
+    const node = csb({
       row: parseInt(obj.first.row),
       col: parseInt(obj.first.col),
       rowSpan: Math.max(
@@ -174,7 +176,7 @@ function go() {
         1
       ),
     });
-    console.log(node);
+
     return updateSlotNode(node, obj);
   }
 
@@ -283,6 +285,8 @@ function go() {
         first: state.lastMouseDown,
         last: state.lastMouseOver,
       });
+      state.currentSlotMarker.setAttribute('data-slot-id', state.slots.length);
+      state.slots.push(state.currentSlotMarker);
       requestAnimationFrame(() =>
         glassPane.appendChild(state.currentSlotMarker)
       );
