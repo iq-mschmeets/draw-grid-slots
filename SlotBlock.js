@@ -36,7 +36,7 @@ export default class SlotBlock extends HTMLElement {
     console.log('%s.CTOR %o', this.tagName, this.shadowRoot.innerHTML);
   }
   static get observedAttributes() {
-    return ['data-column', 'data-row', 'data-slot-id'];
+    return ['data-column', 'data-row', 'data-slot-id', 'data-uuid'];
   }
   attributeChangedCallback(name, oldVal, newVal) {
     if (name === 'data-column') {
@@ -45,19 +45,34 @@ export default class SlotBlock extends HTMLElement {
       this.row = parseInt(newVal);
     } else if (name === 'data-slot-id') {
       this.slotId = newVal;
+    } else if (name === 'data-uuid') {
+      this.uuid = newVal;
     }
   }
   set column(val) {
     this._column = val;
-    // this.shadowRoot.querySelector('#c').innerText = val;
   }
   set row(val) {
     this._row = val;
-    // this.shadowRoot.querySelector('#r').innerText = val;
   }
   set slotId(val) {
     this._slotId = val;
     this.shadowRoot.querySelector('#r').innerText = val;
+  }
+  set uuid(val) {
+    this._uuid = val;
+  }
+  get column() {
+    return this.getAttribute('data-column');
+  }
+  get row() {
+    return this.getAttribute('data-row');
+  }
+  get slotId() {
+    return this.getAttribute('data-slot-id');
+  }
+  get uuid() {
+    return this.getAttribute('data-uuid');
   }
   connectedCallback() {
     console.log(this.shadowRoot.innerHTML);
@@ -67,11 +82,22 @@ export default class SlotBlock extends HTMLElement {
       .addEventListener('click', this.onDelete);
     this.shadowRoot.addEventListener('mouseup', this.onMouseUp);
   }
-  disconnectedCallback() {}
+  disconnectedCallback() {
+    this.shadowRoot.removeEventListener('mouseup', this.onMouseUp);
+    this.shadowRoot
+      .querySelector('button')
+      .removeEventListener('click', this.onDelete);
+  }
   onDelete(evt) {
     evt.preventDefault();
     evt.stopPropagation();
     console.log('DELETE');
+    this.dispatchEvent(
+      new CustomEvent('delete_slot', {
+        bubbles: true,
+        detail: { row: this.row, column: this.column },
+      })
+    );
   }
   onMouseUp(evt) {
     console.log('%s.onMouseUp %o', this.tagName, evt);

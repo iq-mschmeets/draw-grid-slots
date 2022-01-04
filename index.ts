@@ -17,7 +17,6 @@ import {
 
 function go() {
   const DIMENSION = 24;
-  const SLOT_COUNT = DIMENSION * DIMENSION;
 
   const main = document.getElementsByTagName('main')[0];
   const parent = document.getElementById('grid-container');
@@ -142,7 +141,6 @@ function go() {
     if (!firstNode || !lastNode) {
       return null;
     }
-    console.log(firstNode, lastNode);
 
     let topLeftPoint = topLeft(firstNode, lastNode);
     let bottomRightPoint = bottomRight(firstNode, lastNode);
@@ -153,7 +151,6 @@ function go() {
       topLeftPoint.x - bottomRightPoint.x
     )}px; height:${Math.abs(bottomRightPoint.y - topLeftPoint.y)}px;`;
 
-    console.log(st, cp(topLeftPoint), cp(bottomRightPoint));
     return st;
   };
 
@@ -195,9 +192,8 @@ function go() {
 
   function addSlot(obj) {
     const slot = {
-      index: state.slots.length + 1,
-      row: parseInt(obj.first.row),
-      col: parseInt(obj.first.col),
+      row: obj.node.row, //parseInt(obj.first.row),
+      col: obj.node.col, //parseInt(obj.first.col),
       rowSpan: Math.max(
         parseInt(obj.last.row) - parseInt(obj.first.row) + 1,
         1
@@ -206,15 +202,17 @@ function go() {
         parseInt(obj.last.col) - parseInt(obj.first.col) + 1,
         1
       ),
-      slotId: uuid(),
+      slotId: obj.node.slotId,
+      uuid: obj.node.uuid,
+      node: obj.node,
     };
 
     state.slots.push(slot);
 
     // Need to update state to reflect that we're done....
-    delete state.currentSlotMarker;
+    //delete state.currentSlotMarker;
 
-    state.slotNodes.push(state.currentSlotMarker);
+    //state.slotNodes.push(state.currentSlotMarker);
   }
 
   function resetStateForBaseGridChange(dim) {
@@ -255,6 +253,13 @@ function go() {
     resetStateForBaseGridChange(state.baseGrid);
   });
 
+  const deleteSlot = fromEvent(glassPane, 'delete_slot').subscribe((evt) => {
+    let data = evt.detail;
+    state.slots = state.slots.filter((sl) => sl.uuid !== data.uuid);
+    glassPane.removeChild(evt.target);
+    console.log('post delete state: %o', state);
+  });
+
   const mouseObserver = mouseDowns.pipe(
     map((evt) => {
       state.lastMouseDown = getGridObject(evt.target, evt.clientX, evt.clientY);
@@ -284,9 +289,13 @@ function go() {
       state.currentSlotMarker = renderSlotMarker({
         first: state.lastMouseDown,
         last: state.lastMouseOver,
+        slotId: state.slots.length,
+        uuid: uuid(),
       });
-      state.currentSlotMarker.setAttribute('data-slot-id', state.slots.length);
-      state.slots.push(state.currentSlotMarker);
+      state.currentSlotMarker.setAttribute(
+        'data-slot-id',
+        state.slots.length + 1
+      );
       requestAnimationFrame(() =>
         glassPane.appendChild(state.currentSlotMarker)
       );
@@ -305,9 +314,11 @@ function go() {
     addSlot({
       first: local.lastMouseDown,
       last: local.lastMouseOver,
+      node: local.currentSlotMarker,
     });
     delete state.lastMouseDown;
     delete state.lastMouseOver;
+    delete state.currentSlotMarker;
   });
 
   renderGrid(DIMENSION, DIMENSION);
