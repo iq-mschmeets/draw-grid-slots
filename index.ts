@@ -52,8 +52,8 @@ function go() {
 
   const ce = (props) => {
     let e = document.createElement('div');
-    e.setAttribute('data-column', props.c + 1);
-    e.setAttribute('data-row', props.r + 1);
+    e.setAttribute('data-column', props.c);
+    e.setAttribute('data-row', props.r);
     e.classList.add('slot');
     e.innerText = `r:${props.r} c:${props.c}`;
     return e;
@@ -72,9 +72,9 @@ function go() {
 
   function renderGrid(rows, columns, gap) {
     let df = document.createDocumentFragment();
-    for (let r = 0; r < rows; ++r) {
-      for (let c = 0; c < columns; ++c) {
-        df.appendChild(ce({ r: r + 1, c: c + 1 }));
+    for (let r = 1; r <= rows; r++) {
+      for (let c = 1; c <= columns; c++) {
+        df.appendChild(ce({ r: r, c: c }));
       }
     }
     parent.setAttribute('class', `base-${rows}`);

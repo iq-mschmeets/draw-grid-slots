@@ -11,7 +11,7 @@ header {
 main {
   width: 96vw;
   height: 90vh;
-  padding: 0.25em;
+  /* padding: 0.25em; */
   margin: auto;
   background-color: #cee6de;
   position: relative;

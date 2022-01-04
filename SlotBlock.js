@@ -11,7 +11,6 @@ function getTemplate() {
         width: 100%;
         height: 100%;
         min-height: 100%;
-        border: 2px dotted white;
         pointer-events:auto;
       }
     </style>
@@ -99,4 +98,6 @@ export default class SlotBlock extends HTMLElement {
     }
   }
 }
-window.customElements.define('slot-block', SlotBlock);
+if (window.customElements.get('slot-block') === undefined) {
+  window.customElements.define('slot-block', SlotBlock);
+}
