@@ -1,3 +1,12 @@
+import {
+  getBoundingClientRect,
+  debounce,
+  shape,
+  point,
+  shapeToCSSString,
+  isTagTarget,
+} from './utils.js';
+
 function getTemplate() {
   let d = document.createElement('div');
   d.style.height = '100%';
@@ -12,17 +21,164 @@ function getTemplate() {
         height: 100%;
         min-height: 100%;
         pointer-events:auto;
+        position:relative;
       }
+      :host{ pointer-events:auto;}
+      .tl,.tr,.br,.bl{position:absolute;background-color:#333;}
+      .tl{top:0;left:0;height:20px;width:20px;}
+      .tr{top:0;right:0;height:20px;width:20px;}
+      .bl{bottom:0;left:0;height:20px;width:20px;}
+      .br{bottom:0;right:0;height:20px;width:20px;}
     </style>
     <div class='slot-block-inner' style='height:100%;'>
+        <div class="tl"></div>
+        <div class="tr"></div>
         <span>ID <strong id="r"></strong> </span>
-        <span><button>Delete</button></span>
+        <span><button class="d-button">Delete</button></span>
+        <div class="bl"></div>
+        <div class="br"></div>
     </div>
   `;
   return d;
 }
 
-export default class SlotBlock extends HTMLElement {
+const dispatchEvent = (evtName, node, payload) => {
+  node.dispatchEvent(
+    new CustomEvent(evtName, {
+      bubbles: true,
+      detail: payload,
+    })
+  );
+};
+
+const pointerMoveFactory = (node) => {
+  const _this = node;
+
+  function pointerMoveHandler(evt) {
+    _this.onPointerMove(evt);
+  }
+
+  // return debounce(pointerMoveHandler, 5, false);
+  return pointerMoveHandler;
+};
+
+const pointerCoords = (evt, offset) => {
+  if (offset) {
+    return new point(evt.clientX - offset.x, evt.clientY - offset.y);
+  } else {
+    return new point(evt.clientX, evt.clientY);
+  }
+};
+
+// so we have some clue as to directionality
+const tlMoved = (mousePoint, parentRect) => {
+  return {
+    top: mousePoint.y,
+    left: mousePoint.x,
+    bottom: parentRect.bottom,
+    right: parentRect.right,
+  };
+};
+const trMoved = (mousePoint, parentRect) => {
+  return {
+    top: mousePoint.y,
+    left: parentRect.left,
+    bottom: parentRect.bottom,
+    right: mousePoint.x,
+  };
+};
+const blMoved = (mousePoint, parentRect) => {
+  return {
+    top: parentRect.top,
+    left: mousePoint.x,
+    bottom: mousePoint.y,
+    right: parentRect.right,
+  };
+};
+const brMoved = (mousePoint, parentRect) => {
+  return {
+    top: parentRect.top,
+    left: parentRect.left,
+    bottom: mousePoint.y,
+    right: mousePoint.x,
+  };
+};
+
+const mouseMoveMap = {
+  tl: tlMoved,
+  tr: trMoved,
+  bl: blMoved,
+  br: brMoved,
+};
+
+const adjustDims = (shape) => {
+  return shape;
+};
+
+class PointerState {
+  constructor() {
+    this._pointerDownTarget = null;
+    this._pointerDownShape = null;
+    this._pointerLastCapture = null;
+    this._isMoving = false;
+    this.setLastCapture = this.setLastCapture.bind(this);
+  }
+  set downTarget(val) {
+    this._pointerDownTarget = val;
+    this._isMoving = true;
+  }
+  set downShape(val) {
+    this._pointerDownShape = val;
+    this._pointerLastCapture = val;
+  }
+  get isMoving() {
+    return this._isMoving;
+  }
+  get downTarget() {
+    return this._pointerDownTarget;
+  }
+  get downShape() {
+    return this._pointerDownShape;
+  }
+  get lastCapture() {
+    return this._pointerLastCapture;
+  }
+  get state() {
+    return {
+      target: this._pointerDownTarget,
+      shape: this._pointerDownShape,
+      capture: this._pointerLastCapture,
+      styleString: this.styleAttributeString,
+    };
+  }
+  get styleAttributeString() {
+    return shapeToCSSString(adjustDims(this.lastCapture));
+  }
+  setLastCapture(pointerCoordinates) {
+    let handler = mouseMoveMap[this.downTarget.getAttribute('class')];
+    if (!handler) {
+      this._pointerLastCapture = this.downShape;
+    } else {
+      this._pointerLastCapture = handler(pointerCoordinates, this.downShape);
+    }
+    // console.log(
+    //   this._pointerLastCapture,
+    //   this.styleAttributeString,
+    //   pointerCoordinates
+    // );
+  }
+  reset() {
+    this._isMoving = false;
+    this._pointerDownTarget = null;
+    this._pointerDownShape = null;
+    this._pointerLastCapture = null;
+  }
+  toString() {
+    return `target:${this._pointerDownTarget}, shape:${this._pointerDownShape}, capture:${this._pointerLastCapture}`;
+  }
+}
+
+class SlotBlock extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({
@@ -31,7 +187,11 @@ export default class SlotBlock extends HTMLElement {
 
     this.shadowRoot.appendChild(getTemplate());
     this.onDelete = this.onDelete.bind(this);
-    this.onMouseUp = this.onMouseUp.bind(this);
+    this.onPointerDown = this.onPointerDown.bind(this);
+    this.onPointerUp = this.onPointerUp.bind(this);
+    this.onPointerMove = this.onPointerMove.bind(this);
+    this.onKeyUp = this.onKeyUp.bind(this);
+    this.pointerState = new PointerState();
   }
 
   static get observedAttributes() {
@@ -42,6 +202,10 @@ export default class SlotBlock extends HTMLElement {
     if (name === 'data-slot-id') {
       this.slotId = newVal;
     }
+  }
+
+  set offset(point) {
+    this._offset = point;
   }
 
   set slotId(val) {
@@ -65,18 +229,46 @@ export default class SlotBlock extends HTMLElement {
     return this.getAttribute('data-uuid');
   }
 
+  get state() {
+    return {
+      slotId: this.slotId,
+      row: this.row,
+      column: this.column,
+      uuid: this.uuid,
+      shape: getBoundingClientRect(this),
+    };
+  }
+
+  get offsetShape() {
+    return new shape(
+      this.offsetTop,
+      this.offsetLeft,
+      this.offsetTop + this.offsetHeight,
+      this.offsetLeft + this.offsetWidth
+    );
+  }
+
+  el() {
+    return this.shadowRoot.querySelector('.slot-block-inner');
+  }
+
   connectedCallback() {
     this.shadowRoot
       .querySelector('button')
       .addEventListener('click', this.onDelete);
-    this.shadowRoot.addEventListener('mouseup', this.onMouseUp);
+
+    let el = this.el();
+    el.addEventListener('pointerup', this.onPointerUp);
+    el.addEventListener('pointerdown', this.onPointerDown);
+    el.addEventListener('pointermove', this.onPointerMove);
   }
 
   disconnectedCallback() {
-    this.shadowRoot.removeEventListener('mouseup', this.onMouseUp);
-    this.shadowRoot
-      .querySelector('button')
-      .removeEventListener('click', this.onDelete);
+    let el = this.el();
+    el.removeEventListener('pointerdown', this.onPointerDown);
+    el.removeEventListener('pointerup', this.onPointerUp);
+    el.removeEventListener('pointermove', this.onPointerMove);
+    el.querySelector('button').removeEventListener('click', this.onDelete);
   }
 
   onDelete(evt) {
@@ -91,13 +283,62 @@ export default class SlotBlock extends HTMLElement {
     );
   }
 
-  onMouseUp(evt) {
-    console.log('%s.onMouseUp %o', this.tagName, evt);
-    if (evt.target.tagName === 'BUTTON') {
-      evt.stopPropagation();
+  onPointerDown(evt) {
+    if (isTagTarget(evt, 'button.d-button')) {
+      return;
     }
+    this.pointerState.downTarget = evt.composedPath()[0];
+    this.pointerState.downShape = this.offsetShape;
+
+    this.el().setPointerCapture(evt.pointerId);
+
+    console.log(
+      '%s.onMouseDown %o, %o, %s',
+      this.tagName,
+      this.pointerState.downShape,
+      evt,
+      this.getAttribute('style')
+    );
+  }
+
+  onPointerUp(evt) {
+    if (isTagTarget(evt, 'button.d-button')) {
+      return;
+    }
+    console.log(
+      '%s.onMouseUp %o, %o, %o, %o',
+      this.tagName,
+      evt,
+      this.pointerState.state
+    );
+
+    if (this.pointerState.isMoving) {
+      evt.stopPropagation();
+
+      this.el().releasePointerCapture(evt.pointerId);
+
+      this.pointerState.reset();
+
+      dispatchEvent('action', this, this.state);
+    }
+  }
+
+  onPointerMove(evt) {
+    if (!this.pointerState.isMoving) {
+      return;
+    }
+    evt.stopPropagation();
+
+    this.pointerState.setLastCapture(pointerCoords(evt, this._offset));
+    this.setAttribute('style', this.pointerState.styleAttributeString);
+  }
+
+  onKeyUp(evt) {
+    console.log('%s.onKeyUp %o', this.tagName, evt);
   }
 }
 if (window.customElements.get('slot-block') === undefined) {
   window.customElements.define('slot-block', SlotBlock);
 }
+
+export { SlotBlock };

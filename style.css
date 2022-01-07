@@ -62,6 +62,7 @@ slot-block {
   display: flex;
   flex-direction: column;
   justify-content: stretch;
+  pointer-events: auto;
 }
 
 #glass-pane > slot-block.slot-node {

@@ -23,6 +23,7 @@
           >Gap (px)
           <input id="base-grid-gap" type="number" value="4" />
         </label>
+        <button id="result-dialog-button">Show Results</button>
         <button id="reset-grid">Reset Grid</button>
       </div>
     </header>
@@ -30,6 +31,10 @@
     <main>
       <section id="grid-container"></section>
       <section id="glass-pane"></section>
+      <dialog id="grid-dialog">
+        <textarea rows="12" cols="48"></textarea>
+        <button>Close</button>
+      </dialog>
     </main>
   </body>
 </html>
