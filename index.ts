@@ -1,6 +1,7 @@
 import './style.css';
 
 import { uuid, cp } from './utils.js';
+import { GridState } from './GridState.js';
 import {
   csb,
   renderGrid,
@@ -27,18 +28,31 @@ function go() {
   const parent = document.getElementById('grid-container');
   const glassPane = document.getElementById('glass-pane');
 
-  let state = { slots: [], slotNodes: [], baseGrid: 24, gridGap: 4 };
+  let state = new GridState(); //{ slots: [], slotNodes: [], baseGrid: 24, gridGap: 4 };
+  state.parentX = getGridObject(parent).x;
+  state.parentY = getGridObject(parent).y;
 
-  const PARENT_X = getGridObject(parent).x;
-  const PARENT_Y = getGridObject(parent).y;
-
-  console.log(PARENT_X, PARENT_Y);
+  console.log(state);
 
   function getStyleForSlot(slot) {
     if (slot != null) {
       return `grid-row: ${slot.row} / span ${slot.rowSpan}; grid-column: ${slot.col} / span ${slot.colSpan};`;
     }
     return '';
+  }
+
+  function updateSlotBlock(node, obj) {
+    let props = cp(obj);
+    console.log('updateSlotBlock node ', node);
+    if (props.first && props.last) {
+      const str = getSlotStyleForGlassPane(state.parentX, state.parentY, props);
+      requestAnimationFrame(() => {
+        if (str) {
+          node.setAttribute('style', str);
+        }
+      });
+    }
+    return node;
   }
 
   function renderSlotBlock(obj) {
@@ -53,24 +67,11 @@ function go() {
         parseInt(obj.last.col) - parseInt(obj.first.col) + 1,
         1
       ),
-      parentX: PARENT_X,
-      parentY: PARENT_Y,
+      parentX: state.parentX,
+      parentY: state.parentY,
     });
-
+    console.log('renderSlotBlock node ', node);
     return updateSlotBlock(node, obj);
-  }
-
-  function updateSlotBlock(node, obj) {
-    let props = cp(obj);
-    if (props.first && props.last) {
-      requestAnimationFrame(() => {
-        const str = getSlotStyleForGlassPane(PARENT_X, PARENT_Y, props);
-        if (str) {
-          node.setAttribute('style', str);
-        }
-      });
-    }
-    return node;
   }
 
   function addSlot(obj) {
@@ -93,7 +94,7 @@ function go() {
       node: obj.node,
     };
 
-    state.slots.push(slot);
+    state.addSlot(slot);
   }
 
   function resetStateForBaseGridChange(dim) {
@@ -101,12 +102,11 @@ function go() {
     state.baseGrid = dim;
     glassPane.innerHTML = '';
     parent.innerHTML = '';
-    delete state.currentSlotMarker;
-    delete state.lastMouseDown;
-    delete state.lastMouseOver;
+    state.transientGridState.reset();
+
     renderGrid(parent, dim, dim, state.gridGap);
     console.time('ggt');
-    console.log(getGridTable());
+    console.log(getGridTable(parent));
     console.timeEnd('ggt');
   }
 
@@ -143,20 +143,25 @@ function go() {
     document.getElementById('reset-grid'),
     'click'
   ).subscribe((evt) => {
-    state = { slots: [], slotNodes: [], baseGrid: 24, gridGap: 4 };
+    // state = { slots: [], slotNodes: [], baseGrid: 24, gridGap: 4 };
+    state = new GridState();
     resetStateForBaseGridChange(state.baseGrid);
   });
 
   const deleteSlot = fromEvent(glassPane, 'delete_slot').subscribe((evt) => {
     let data = evt.detail;
-    state.slots = state.slots.filter((sl) => sl.uuid !== data.uuid);
+    state.deleteSlot(data.uuid);
     glassPane.removeChild(evt.target);
     console.log('post delete state: %o', state);
   });
 
   const mouseObserver = mouseDowns.pipe(
     map((evt) => {
-      state.lastMouseDown = getGridObject(evt.target, evt.offsetX, evt.offsetY);
+      state.transientGridState.lastMouseDown = getGridObject(
+        evt.target,
+        evt.offsetX,
+        evt.offsetY
+      );
       return evt;
     }),
     switchMap((evt) => {
@@ -176,32 +181,32 @@ function go() {
   );
 
   mouseSubscriber.subscribe((evt) => {
-    state.lastMouseOver = evt;
+    state.transientGridState.lastMouseOver = evt;
 
-    if (!state.currentSlotMarker) {
-      state.currentSlotMarker = renderSlotBlock({
-        first: state.lastMouseDown,
-        last: state.lastMouseOver,
+    if (!state.transientGridState.currentSlotMarker) {
+      state.transientGridState.currentSlotMarker = renderSlotBlock({
+        first: state.transientGridState.lastMouseDown,
+        last: state.transientGridState.lastMouseOver,
         slotId: state.slots.length,
         uuid: uuid(),
       });
-      state.currentSlotMarker.setAttribute(
+      state.transientGridState.currentSlotMarker.setAttribute(
         'data-slot-id',
         state.slots.length + 1
       );
       requestAnimationFrame(() =>
-        glassPane.appendChild(state.currentSlotMarker)
+        glassPane.appendChild(state.transientGridState.currentSlotMarker)
       );
     } else {
-      updateSlotBlock(state.currentSlotMarker, {
-        first: state.lastMouseDown,
-        last: state.lastMouseOver,
+      updateSlotBlock(state.transientGridState.currentSlotMarker, {
+        first: state.transientGridState.lastMouseDown,
+        last: state.transientGridState.lastMouseOver,
       });
     }
   });
 
   mouseUps.subscribe((e) => {
-    let local = cp(state);
+    let local = cp(state.transientGridState);
     console.log('mouseUps ', local);
     if (local.hasOwnProperty('lastMouseOver')) {
       addSlot({
@@ -211,9 +216,7 @@ function go() {
       });
     }
 
-    delete state.lastMouseDown;
-    delete state.lastMouseOver;
-    delete state.currentSlotMarker;
+    state.transientGridState.reset();
   });
 
   ////////////////////////////////////////////////////////

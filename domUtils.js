@@ -100,7 +100,7 @@ const getSlotStyleForGlassPane = (parentX, parentY, obj) => {
   // )}px; height:${Math.abs(bottomRightPoint.y - topLeftPoint.y)}px;`;
 };
 
-const getGridTable = () =>
+const getGridTable = (parent) =>
   Array.from(parent.querySelectorAll('.slot'))
     // .filter((i, indx) => indx < 12)
     .map(getGridObject)
