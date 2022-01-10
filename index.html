@@ -8,8 +8,42 @@
   </head>
 
   <body>
+    <template id="filter-section">
+      <div>
+        <div class="toolbar split">
+            <h5 class="section-title">Filters</h5>
+            <button class="action-button green-button">+</button>
+        </div>
+        <div class="lister">
+            <datalist id="f-s-l">
+                <option value="">All Capabilities</option>
+                <option value="">Some Capabilities</option>
+                <option value="">All Business Functions</option>
+                <option value="">Some Business Functions</option>
+            </datalist>
+            <input type="search" class="form-control" id="filter-search" list="f-s-l" placeholder="search for filters" ></input>
+            <ul class="pt5">
+                <li draggable="true">My Stuff</li>
+                <li draggable="true">Your Stuff</li>
+                <li draggable="true">Our Stuff</li>
+                <li draggable="true">Somebody Else's Stuff</li>
+            </ul>
+        </div>
+      </div>
+    </template>
+
+    <template id="content-sections">
+      <div>
+        <div class="toolbar split">
+            <h5 class="section-title"></h5>
+            <button class="action-button green-button">+</button>
+        </div>
+        <div class="lister"></div>
+      </div>
+    </template>
+
     <header>
-      <h1>Grid Editor</h1>
+      <h1>Editor</h1>
       <div>
         <label style="display: inline-block; margin-left: 32px">
           Base Grid:
@@ -29,12 +63,18 @@
     </header>
 
     <main>
-      <section id="grid-container"></section>
-      <section id="glass-pane"></section>
-      <dialog id="grid-dialog">
-        <textarea rows="12" cols="48"></textarea>
-        <button>Close</button>
-      </dialog>
+      <article id="content-available">
+      <article id="grid">
+        <section id="grid-container"></section>
+        <section id="glass-pane"></section>
+        <dialog id="grid-dialog">
+          <textarea rows="12" cols="48"></textarea>
+          <button>Close</button>
+        </dialog>
+      </article>
+      <article id="properties"></article>
     </main>
+
+
   </body>
 </html>

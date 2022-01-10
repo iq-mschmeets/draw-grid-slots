@@ -33,7 +33,7 @@ function getTemplate() {
     <div class='slot-block-inner' style='height:100%;'>
         <div class="tl"></div>
         <div class="tr"></div>
-        <span>ID <strong id="r"></strong> </span>
+        <span>Slot: <strong id="r"></strong> </span>
         <span><button class="d-button">Delete</button></span>
         <div class="bl"></div>
         <div class="br"></div>
@@ -157,15 +157,27 @@ class PointerState {
   setLastCapture(pointerCoordinates) {
     let handler = mouseMoveMap[this.downTarget.getAttribute('class')];
     if (!handler) {
-      this._pointerLastCapture = this.downShape;
+      // first time through.
+      if (!this._lastPointerCoordinates) {
+        this._lastPointerCoordinates = pointerCoordinates;
+        this._pointerLastCapture = this.downShape;
+        return;
+      } else {
+        let deltaCoords = {
+          x: this._lastPointerCoordinates.x - pointerCoordinates.x,
+          y: this._lastPointerCoordinates.y - pointerCoordinates.y,
+        };
+        this._pointerLastCapture = {
+          top: this._pointerLastCapture.top - deltaCoords.y,
+          left: this._pointerLastCapture.left - deltaCoords.x,
+          bottom: this._pointerLastCapture.bottom - deltaCoords.y,
+          right: this._pointerLastCapture.right - deltaCoords.x,
+        };
+      }
     } else {
       this._pointerLastCapture = handler(pointerCoordinates, this.downShape);
     }
-    // console.log(
-    //   this._pointerLastCapture,
-    //   this.styleAttributeString,
-    //   pointerCoordinates
-    // );
+    this._lastPointerCoordinates = pointerCoordinates;
   }
   reset() {
     this._isMoving = false;
@@ -292,25 +304,25 @@ class SlotBlock extends HTMLElement {
 
     this.el().setPointerCapture(evt.pointerId);
 
-    console.log(
-      '%s.onMouseDown %o, %o, %s',
-      this.tagName,
-      this.pointerState.downShape,
-      evt,
-      this.getAttribute('style')
-    );
+    // console.log(
+    //   '%s.onMouseDown %o, %o, %s',
+    //   this.tagName,
+    //   this.pointerState.downShape,
+    //   evt,
+    //   this.getAttribute('style')
+    // );
   }
 
   onPointerUp(evt) {
     if (isTagTarget(evt, 'button.d-button')) {
       return;
     }
-    console.log(
-      '%s.onMouseUp %o, %o, %o, %o',
-      this.tagName,
-      evt,
-      this.pointerState.state
-    );
+    // console.log(
+    //   '%s.onMouseUp %o, %o, %o, %o',
+    //   this.tagName,
+    //   evt,
+    //   this.pointerState.state
+    // );
 
     if (this.pointerState.isMoving) {
       evt.stopPropagation();

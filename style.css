@@ -12,10 +12,14 @@ main {
   width: 90vw;
   height: 90vh;
   margin: auto;
-  background-color: #cee6de;
   position: relative;
+  display: grid;
+  grid-template-columns: 20% 60% 20%;
 }
 
+#grid {
+  background-color: #cee6de;
+}
 #grid-container {
   display: grid;
   gap: 0.25rem;

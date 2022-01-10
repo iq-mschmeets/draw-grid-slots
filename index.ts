@@ -43,7 +43,7 @@ function go() {
 
   function updateSlotBlock(node, obj) {
     let props = cp(obj);
-    console.log('updateSlotBlock node ', node);
+
     if (props.first && props.last) {
       const str = getSlotStyleForGlassPane(state.parentX, state.parentY, props);
       requestAnimationFrame(() => {
@@ -70,7 +70,7 @@ function go() {
       parentX: state.parentX,
       parentY: state.parentY,
     });
-    console.log('renderSlotBlock node ', node);
+
     return updateSlotBlock(node, obj);
   }
 
@@ -98,7 +98,7 @@ function go() {
   }
 
   function resetStateForBaseGridChange(dim) {
-    console.log('resetStateForBaseGridChange %s, %o', dim, cp(state));
+    // console.log('resetStateForBaseGridChange %s, %o', dim, cp(state));
     state.baseGrid = dim;
     glassPane.innerHTML = '';
     parent.innerHTML = '';
@@ -121,7 +121,7 @@ function go() {
     // the evt.target is the DOM node, any updates will be to the
     // attributes of that node.
     // The current state of the slot is available in the evt.detail.
-    console.log(evt);
+    console.log('Action Event: ', evt);
   });
 
   const baseGridDimension = fromEvent(
@@ -143,7 +143,6 @@ function go() {
     document.getElementById('reset-grid'),
     'click'
   ).subscribe((evt) => {
-    // state = { slots: [], slotNodes: [], baseGrid: 24, gridGap: 4 };
     state = new GridState();
     resetStateForBaseGridChange(state.baseGrid);
   });
@@ -152,7 +151,6 @@ function go() {
     let data = evt.detail;
     state.deleteSlot(data.uuid);
     glassPane.removeChild(evt.target);
-    console.log('post delete state: %o', state);
   });
 
   const mouseObserver = mouseDowns.pipe(
