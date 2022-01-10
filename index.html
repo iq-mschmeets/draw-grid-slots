@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RxJS Playground</title>
+    <title>Folder Config Playground</title>
   </head>
 
   <body>
@@ -57,9 +57,16 @@
         <label style="display: inline-block; margin-left: 32px">
           Base Grid:
           <select id="base-grid-selector">
-            <option selected="1" value="12">12x12</option>
-            <option value="24">24x24</option>
-            <option value="48">48x48</option>
+            <optgroup label="Base Grids">
+              <option selected="1" value="12">12x12</option>
+              <option value="24">24x24</option>
+              <option value="48">48x48</option>
+              <option value="4">4x4</option>
+            </optgroup>
+            <optgroup label="Existing Grids">
+              <option value="12">Some Other One</option>
+              <option value="12">Yet Another One</option>
+            </optgroup>
           </select>
         </label>
 
