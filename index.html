@@ -21,7 +21,7 @@
                 <option value="">All Business Functions</option>
                 <option value="">Some Business Functions</option>
             </datalist>
-            <input type="search" class="form-control" id="filter-search" list="f-s-l" placeholder="search for filters" ></input>
+            <input type="search" class="form-control" id="filter-search" list="f-s-l" placeholder="search for existing" ></input>
             <ul class="pt5">
                 <li draggable="true">My Stuff</li>
                 <li draggable="true">Your Stuff</li>
@@ -38,32 +38,47 @@
             <h5 class="section-title"></h5>
             <button class="action-button green-button">+</button>
         </div>
-        <div class="lister"></div>
+        <input type="search" class="form-control" placeholder="search for existing" ></input>
+        <div class="lister">
+        <ul class="pt5"><li></li></ul>
+      </div>
       </div>
     </template>
 
     <header>
       <h1>Editor</h1>
       <div>
+        <strong>Show Expanded Content in Tabs?</strong>
+        <input type="radio" name="in-tabs" value="No" checked="checked" />
+        <label for="huey">No</label>
+        <input type="radio" name="in-tabs" value="Yes"/>
+        <label for="huey">Yes</label>
+
         <label style="display: inline-block; margin-left: 32px">
           Base Grid:
           <select id="base-grid-selector">
-            <option selected="1" value="24">24x24</option>
-            <option value="12">12x12</option>
+            <option selected="1" value="12">12x12</option>
+            <option value="24">24x24</option>
             <option value="48">48x48</option>
           </select>
         </label>
+
         <label style="display: inline-block; margin-left: 32px"
           >Gap (px)
           <input id="base-grid-gap" type="number" value="4" />
         </label>
+
         <button id="result-dialog-button">Show Results</button>
-        <button id="reset-grid">Reset Grid</button>
+        <button id="reset-grid">Reset Grid</button>       
       </div>
     </header>
 
     <main>
       <article id="content-available">
+        <h4>Contents</h4>
+        <div class="content"></div>
+      </article>
+
       <article id="grid">
         <section id="grid-container"></section>
         <section id="glass-pane"></section>
@@ -72,7 +87,11 @@
           <button>Close</button>
         </dialog>
       </article>
-      <article id="properties"></article>
+
+      <article id="properties">
+        <h4>Properties</h4>
+        <div class="content"></div>
+      </article>
     </main>
 
 

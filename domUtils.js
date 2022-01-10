@@ -4,6 +4,7 @@ import {
   getBoundingClientRect,
   shapeToCSSString,
   point,
+  toKey,
 } from './utils.js';
 
 const ce = (props) => {
@@ -28,6 +29,7 @@ const csb = (props) => {
 };
 
 function renderGrid(parent, rows, columns, gap) {
+  console.log(arguments);
   let df = document.createDocumentFragment();
   for (let r = 1; r <= rows; r++) {
     for (let c = 1; c <= columns; c++) {
@@ -37,7 +39,7 @@ function renderGrid(parent, rows, columns, gap) {
   parent.setAttribute('class', `base-${rows}`);
   parent.innerHTML = '';
   parent.appendChild(df);
-  parent.style.gridGap = gap ? `${gap}px` : '4px';
+  parent.style.gridGap = `${gap}px`;
 }
 
 const getGridObject = (sl, clX, clY) => {

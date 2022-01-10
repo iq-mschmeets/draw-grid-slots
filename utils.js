@@ -68,6 +68,10 @@ const point = function (x, y) {
 
 const isTagTarget = (evt, sel) => evt.target.matches(sel);
 
+const reifyTemplate = (domId) => {
+  return document.getElementById(domId).content.cloneNode(true);
+};
+
 export {
   toKey,
   cp,
@@ -79,4 +83,5 @@ export {
   shape,
   point,
   isTagTarget,
+  reifyTemplate,
 };

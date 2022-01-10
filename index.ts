@@ -9,6 +9,7 @@ import {
   getSlotStyleForGlassPane,
   getGridTable,
 } from './domUtils.js';
+import { ContentPlaceholder } from './ContentPlaceholder.js';
 
 import {
   map,
@@ -22,7 +23,7 @@ import {
 } from 'rxjs';
 
 function go() {
-  const DIMENSION = 24;
+  const DIMENSION = 12;
 
   const main = document.getElementsByTagName('main')[0];
   const parent = document.getElementById('grid-container');
@@ -97,14 +98,18 @@ function go() {
     state.addSlot(slot);
   }
 
-  function resetStateForBaseGridChange(dim) {
+  function resetStateForBaseGridChange() {
     // console.log('resetStateForBaseGridChange %s, %o', dim, cp(state));
-    state.baseGrid = dim;
+
     glassPane.innerHTML = '';
     parent.innerHTML = '';
     state.transientGridState.reset();
 
-    renderGrid(parent, dim, dim, state.gridGap);
+    renderGrid(parent, state.baseGrid, state.baseGrid, state.gridGap);
+
+    parent.setAttribute('class', `base-${state.baseGrid}`);
+    parent.setAttribute('style', `grid-gap:${state.gridGap}px;`);
+
     console.time('ggt');
     console.log(getGridTable(parent));
     console.timeEnd('ggt');
@@ -128,7 +133,8 @@ function go() {
     document.getElementById('base-grid-selector'),
     'change'
   ).subscribe((evt) => {
-    resetStateForBaseGridChange(Number(evt.target.value));
+    state.baseGrid = Number(evt.target.value);
+    resetStateForBaseGridChange();
   });
 
   const baseGridGap = fromEvent(
@@ -136,7 +142,7 @@ function go() {
     'change'
   ).subscribe((evt) => {
     state.gridGap = Number(evt.target.value);
-    resetStateForBaseGridChange(state.baseGrid);
+    resetStateForBaseGridChange();
   });
 
   const resetGrid = fromEvent(
@@ -221,7 +227,39 @@ function go() {
   // END observable section.
   ////////////////////////////////////////////////////////
 
-  renderGrid(parent, DIMENSION, DIMENSION);
+  renderGrid(parent, state.baseGrid, state.baseGrid, state.gridGap);
+
+  ////////////////////////////////////////////////////////
+  // Begin add dummy content.
+  ////////////////////////////////////////////////////////
+
+  let contentContainer = document.querySelector(
+    'article#content-available>div.content'
+  );
+  console.log(contentContainer);
+
+  let filters = new ContentPlaceholder();
+  filters.templateId = 'filter-section';
+  filters.headerText = 'Filters';
+
+  let folders = new ContentPlaceholder();
+  folders.templateId = 'content-sections';
+  folders.headerText = 'Folders';
+
+  let summaries = new ContentPlaceholder();
+  summaries.templateId = 'content-sections';
+  summaries.headerText = 'Summaries';
+
+  let markups = new ContentPlaceholder();
+  markups.templateId = 'content-sections';
+  markups.headerText = 'Markups';
+
+  requestAnimationFrame(() => {
+    contentContainer.appendChild(filters);
+    contentContainer.appendChild(folders);
+    contentContainer.appendChild(summaries);
+    contentContainer.appendChild(markups);
+  });
 }
 
 go();

@@ -34,7 +34,7 @@ class GridState {
   constructor() {
     this._slots = [];
     this._slotNodes = [];
-    this._baseGrid = 24;
+    this._baseGrid = 12;
     this._gridGap = 4;
     this._parentX = 0;
     this._parentY = 0;
@@ -51,7 +51,7 @@ class GridState {
     return this._baseGrid;
   }
   get gridGap() {
-    return this._baseGrid;
+    return this._gridGap;
   }
   get transientGridState() {
     return this._transientGridState;
