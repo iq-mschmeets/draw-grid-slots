@@ -10,6 +10,7 @@ import {
   getGridTable,
 } from './domUtils.js';
 import { ContentPlaceholder } from './ContentPlaceholder.js';
+import { DimensionSelector } from './DimensionSelector.js';
 
 import {
   map,
@@ -254,11 +255,14 @@ function go() {
   markups.templateId = 'content-sections';
   markups.headerText = 'Markups';
 
+  let dimSel = new DimensionSelector();
+
   requestAnimationFrame(() => {
     contentContainer.appendChild(filters);
     contentContainer.appendChild(folders);
     contentContainer.appendChild(summaries);
     contentContainer.appendChild(markups);
+    document.getElementById('dim-sel-label').appendChild(dimSel);
   });
 }
 

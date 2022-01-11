@@ -8,6 +8,23 @@
   </head>
 
   <body>
+    <template id="dimension-selector">
+    <select id="base-grid-selector">
+    <optgroup label="Base Grids">
+      <option selected="1" value="12">12x12</option>
+      <option value="24">24x24</option>
+      <option value="48">48x48</option>
+      <option value="4">4x4</option>
+    </optgroup>
+    <optgroup label="Custom Grid">
+      <option value="-1">Custom</option>
+    </optgroup>
+    <optgroup label="Existing Grids">
+      <option value="12">Some Other One</option>
+      <option value="12">Yet Another One</option>
+    </optgroup>
+  </select>
+    </template>
     <template id="filter-section">
       <div>
         <div class="toolbar split">
@@ -54,9 +71,10 @@
         <input type="radio" name="in-tabs" value="Yes"/>
         <label for="huey">Yes</label>
 
-        <label style="display: inline-block; margin-left: 32px">
+        <label style="display: inline-block; margin-left: 32px" id="dim-sel-label">
           Base Grid:
-          <select id="base-grid-selector">
+          <!-- <dimension-selector id="base-grid-selector"></dimension-selector> -->
+          <!-- <select id="base-grid-selector">
             <optgroup label="Base Grids">
               <option selected="1" value="12">12x12</option>
               <option value="24">24x24</option>
@@ -67,7 +85,7 @@
               <option value="12">Some Other One</option>
               <option value="12">Yet Another One</option>
             </optgroup>
-          </select>
+          </select> -->
         </label>
 
         <label style="display: inline-block; margin-left: 32px"
