@@ -62,6 +62,10 @@ const shapeToCSSString = (shape) => {
   )}px; height:${Math.abs(shape.bottom - shape.top)}px;`;
 };
 
+const gridToCSSStyle = (gap, rows, cols) => {
+  return `grid-gap:${gap}px;grid-template-rows:repeat(${rows},1fr);grid-template-columns:repeat(${cols},1fr);`;
+};
+
 const point = function (x, y) {
   return { x: x, y: y };
 };
@@ -72,6 +76,15 @@ const reifyTemplate = (domId) => {
   return document.getElementById(domId).content.cloneNode(true);
 };
 
+const dispatchEvent = (evtName, node, payload) => {
+  node.dispatchEvent(
+    new CustomEvent(evtName, {
+      bubbles: true,
+      detail: payload,
+    })
+  );
+};
+
 export {
   toKey,
   cp,
@@ -80,8 +93,10 @@ export {
   getBoundingClientRect,
   debounce,
   shapeToCSSString,
+  gridToCSSStyle,
   shape,
   point,
   isTagTarget,
   reifyTemplate,
+  dispatchEvent,
 };

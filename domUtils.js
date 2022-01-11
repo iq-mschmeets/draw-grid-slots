@@ -3,6 +3,7 @@ import {
   uuid,
   getBoundingClientRect,
   shapeToCSSString,
+  gridToCSSStyle,
   point,
   toKey,
 } from './utils.js';
@@ -36,7 +37,7 @@ function renderGrid(parent, rows, columns, gap) {
       df.appendChild(ce({ r: r, c: c }));
     }
   }
-  parent.setAttribute('class', `base-${rows}`);
+  parent.setAttribute('style', gridToCSSStyle(gap, rows, columns));
   parent.innerHTML = '';
   parent.appendChild(df);
   parent.style.gridGap = `${gap}px`;

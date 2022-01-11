@@ -4,9 +4,11 @@ body {
 }
 header {
   display: grid;
-  grid-template-columns: 10% 80% 10%;
+  grid-template-columns: 10% 80%;
+  grid-template-rows: 1.4em 1.4em;
   grid-gap: 1.5em;
   align-items: center;
+  height: 6vh;
 }
 main {
   height: 90vh;
@@ -18,6 +20,19 @@ main {
 h4 {
   margin: 0;
   margin-bottom: 1em;
+}
+
+slot-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  pointer-events: auto;
+}
+
+dimension-selector {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 #grid {
@@ -33,23 +48,9 @@ h4 {
   user-select: none;
 }
 
-.base-4 {
-  grid-template-rows: repeat(4, 1fr);
-  grid-template-columns: repeat(4, 1fr);
-}
-.base-12 {
-  grid-template-rows: repeat(12, 1fr);
-  grid-template-columns: repeat(12, 1fr);
-}
-
-.base-24 {
-  grid-template-rows: repeat(24, 1fr);
-  grid-template-columns: repeat(24, 1fr);
-}
-
-.base-48 {
-  grid-template-rows: repeat(48, 1fr);
-  grid-template-columns: repeat(48, 1fr);
+.spacer {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
 }
 
 #glass-pane {
@@ -68,13 +69,6 @@ h4 {
   align-items: center;
   font-size: 14px;
   /* aspect-ratio: 1 / 1; */
-}
-
-slot-block {
-  display: flex;
-  flex-direction: column;
-  justify-content: stretch;
-  pointer-events: auto;
 }
 
 #glass-pane > slot-block.slot-node {

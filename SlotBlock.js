@@ -5,6 +5,7 @@ import {
   point,
   shapeToCSSString,
   isTagTarget,
+  dispatchEvent,
 } from './utils.js';
 
 function getTemplate() {
@@ -41,15 +42,6 @@ function getTemplate() {
   `;
   return d;
 }
-
-const dispatchEvent = (evtName, node, payload) => {
-  node.dispatchEvent(
-    new CustomEvent(evtName, {
-      bubbles: true,
-      detail: payload,
-    })
-  );
-};
 
 const pointerMoveFactory = (node) => {
   const _this = node;

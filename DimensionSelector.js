@@ -1,4 +1,4 @@
-import { reifyTemplate } from './utils.js';
+import { reifyTemplate, dispatchEvent } from './utils.js';
 
 class DimensionSelector extends HTMLElement {
   constructor() {
@@ -8,8 +8,9 @@ class DimensionSelector extends HTMLElement {
     // });
     //this.shadowRoot.appendChild( getTemplate() );
     this._templateId = 'dimension-selector';
-    this._headerText = '';
     this.listClickHandler = this.listClickHandler.bind(this);
+    this.onDimensionColValueChange = this.onDimensionColValueChange.bind(this);
+    this.onDimensionRowValueChange = this.onDimensionRowValueChange.bind(this);
   }
   static get observedAttributes() {
     return [];
@@ -22,11 +23,73 @@ class DimensionSelector extends HTMLElement {
   }
   attributeChangedCallback(name, oldVal, newVal) {}
   connectedCallback() {
-    let el = reifyTemplate(this._templateId);
+    this._el = reifyTemplate(this._templateId);
+    this.appendChild(this._el);
+
+    this.querySelector('#grid-type-selector').addEventListener(
+      'change',
+      this.listClickHandler
+    );
+
+    this.querySelector('#grid-type-row-dim').addEventListener(
+      'change',
+      this.onDimensionRowValueChange
+    );
+
+    this.querySelector('#grid-type-col-dim').addEventListener(
+      'change',
+      this.onDimensionColValueChange
+    );
   }
-  disconnectedCallback() {}
+  disconnectedCallback() {
+    if (this._el) {
+      this.querySelector('#grid-type-selector').removeEventListener(
+        'change',
+        this.listClickHandler
+      );
+      this._el.innerHTML = '';
+    }
+  }
+  reset() {
+    delete this._customRowValue;
+    delete this._customColValue;
+    this.querySelector('#grid-type-selector').value = 12;
+  }
+  dispatch() {
+    if (
+      this._customRowValue &&
+      this._customRowValue > 0 &&
+      this._customColValue &&
+      this._customColValue > 0
+    ) {
+      dispatchEvent('action', this, {
+        type: 'grid-dimension-change',
+        rows: parseInt(this._customRowValue),
+        cols: parseInt(this._customColValue),
+      });
+    }
+  }
   listClickHandler(evt) {
+    console.log('%s.listClickHandler ', this.tagName, evt);
     this._optionValue = evt.target.value;
+    evt.preventDefault();
+    evt.stopPropagation();
+    if (this._optionValue == -1) {
+      this.querySelector('#grid-type-dims').style.display = 'block';
+    } else {
+      this._customRowValue = evt.target.value;
+      this._customColValue = evt.target.value;
+      this.querySelector('#grid-type-dims').style.display = 'none';
+      this.dispatch();
+    }
+  }
+  onDimensionRowValueChange(evt) {
+    this._customRowValue = evt.target.value;
+    this.dispatch();
+  }
+  onDimensionColValueChange(evt) {
+    this._customColValue = evt.target.value;
+    this.dispatch();
   }
 }
 if (window.customElements.get('dimension-selector') === undefined) {

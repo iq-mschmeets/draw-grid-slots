@@ -34,7 +34,7 @@ class GridState {
   constructor() {
     this._slots = [];
     this._slotNodes = [];
-    this._baseGrid = 12;
+    this._baseGrid = { rows: 12, cols: 12 };
     this._gridGap = 4;
     this._parentX = 0;
     this._parentY = 0;

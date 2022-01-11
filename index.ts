@@ -1,6 +1,6 @@
 import './style.css';
 
-import { uuid, cp } from './utils.js';
+import { uuid, cp, gridToCSSStyle } from './utils.js';
 import { GridState } from './GridState.js';
 import {
   csb,
@@ -105,11 +105,14 @@ function go() {
     glassPane.innerHTML = '';
     parent.innerHTML = '';
     state.transientGridState.reset();
+    const bg = state.baseGrid;
 
-    renderGrid(parent, state.baseGrid, state.baseGrid, state.gridGap);
+    renderGrid(parent, bg.rows, bg.cols, state.gridGap);
 
-    parent.setAttribute('class', `base-${state.baseGrid}`);
-    parent.setAttribute('style', `grid-gap:${state.gridGap}px;`);
+    parent.setAttribute(
+      'style',
+      gridToCSSStyle(state.gridGap, bg.rows, bg.cols)
+    );
 
     console.time('ggt');
     console.log(getGridTable(parent));
@@ -128,14 +131,6 @@ function go() {
     // attributes of that node.
     // The current state of the slot is available in the evt.detail.
     console.log('Action Event: ', evt);
-  });
-
-  const baseGridDimension = fromEvent(
-    document.getElementById('base-grid-selector'),
-    'change'
-  ).subscribe((evt) => {
-    state.baseGrid = Number(evt.target.value);
-    resetStateForBaseGridChange();
   });
 
   const baseGridGap = fromEvent(
@@ -228,7 +223,7 @@ function go() {
   // END observable section.
   ////////////////////////////////////////////////////////
 
-  renderGrid(parent, state.baseGrid, state.baseGrid, state.gridGap);
+  renderGrid(parent, state.baseGrid.rows, state.baseGrid.cols, state.gridGap);
 
   ////////////////////////////////////////////////////////
   // Begin add dummy content.
@@ -256,6 +251,7 @@ function go() {
   markups.headerText = 'Markups';
 
   let dimSel = new DimensionSelector();
+  dimSel.setAttribute('id', 'base-grid-selector');
 
   requestAnimationFrame(() => {
     contentContainer.appendChild(filters);
@@ -264,6 +260,21 @@ function go() {
     contentContainer.appendChild(markups);
     document.getElementById('dim-sel-label').appendChild(dimSel);
   });
+
+  setTimeout(() => {
+    const baseGridCustomDimension = fromEvent(dimSel, 'action').subscribe(
+      (evt) => {
+        state.baseGrid = {
+          rows: evt.detail.rows,
+          cols: evt.detail.cols,
+        };
+        console.log(evt, state.baseGrid);
+        resetStateForBaseGridChange();
+        // state.baseGrid = Number(evt.target.value);
+        // resetStateForBaseGridChange();
+      }
+    );
+  }, 10);
 }
 
 go();
