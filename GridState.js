@@ -16,6 +16,7 @@ class TransientGridState {
   set lastMouseDown(val) {
     this.reset();
     this._lastMouseDown = val;
+    this._lastMouseOver = val;
   }
   set lastMouseOver(val) {
     this._lastMouseOver = val;
@@ -76,9 +77,6 @@ class GridState {
   }
   addSlot(slot) {
     this._slots.push(slot);
-    // if (slot.hasOwnProperty('node')) {
-    //   node.setAttribute('data-slot-id', this._slots.length + 1);
-    // }
   }
   deleteSlot(uuid) {
     this._slots = this._slots.filter((sl) => sl.uuid === uuid);

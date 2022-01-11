@@ -75,7 +75,7 @@ function go() {
   }
 
   function addSlot(obj) {
-    if (!obj) {
+    if (!obj || !obj.node) {
       return;
     }
 
