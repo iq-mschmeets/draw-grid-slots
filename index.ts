@@ -24,24 +24,22 @@ import {
 } from 'rxjs';
 
 function go() {
-  const DIMENSION = 12;
-
   const main = document.getElementsByTagName('main')[0];
   const parent = document.getElementById('grid-container');
   const glassPane = document.getElementById('glass-pane');
 
-  let state = new GridState(); //{ slots: [], slotNodes: [], baseGrid: 24, gridGap: 4 };
+  let state = new GridState();
   state.parentX = getGridObject(parent).x;
   state.parentY = getGridObject(parent).y;
 
   console.log(state);
 
-  function getStyleForSlot(slot) {
-    if (slot != null) {
-      return `grid-row: ${slot.row} / span ${slot.rowSpan}; grid-column: ${slot.col} / span ${slot.colSpan};`;
-    }
-    return '';
-  }
+  // function getStyleForSlot(slot) {
+  //   if (slot != null) {
+  //     return `grid-row: ${slot.row} / span ${slot.rowSpan}; grid-column: ${slot.col} / span ${slot.colSpan};`;
+  //   }
+  //   return '';
+  // }
 
   function updateSlotBlock(node, obj) {
     let props = cp(obj);
@@ -80,28 +78,23 @@ function go() {
     if (!obj) {
       return;
     }
-    const slot = {
-      row: obj.node.row,
-      col: obj.node.col,
-      rowSpan: Math.max(
-        parseInt(obj.last.row) - parseInt(obj.first.row) + 1,
-        1
-      ),
-      colSpan: Math.max(
-        parseInt(obj.last.col) - parseInt(obj.first.col) + 1,
-        1
-      ),
-      slotId: obj.node.slotId,
-      uuid: obj.node.uuid,
-      node: obj.node,
-    };
 
-    state.addSlot(slot);
+    obj.node.setAttribute(
+      'data-row-span',
+      Math.max(parseInt(obj.last.row) - parseInt(obj.first.row) + 1, 1)
+    );
+
+    obj.node.setAttribute(
+      'data-col-span',
+      Math.max(parseInt(obj.last.col) - parseInt(obj.first.col) + 1, 1)
+    );
+
+    obj.node.setAttribute('data-slot-id', state.slots.length + 1);
+
+    state.addSlot(obj.node.state);
   }
 
   function resetStateForBaseGridChange() {
-    // console.log('resetStateForBaseGridChange %s, %o', dim, cp(state));
-
     glassPane.innerHTML = '';
     parent.innerHTML = '';
     state.transientGridState.reset();
@@ -190,10 +183,6 @@ function go() {
         slotId: state.slots.length,
         uuid: uuid(),
       });
-      state.transientGridState.currentSlotMarker.setAttribute(
-        'data-slot-id',
-        state.slots.length + 1
-      );
       requestAnimationFrame(() =>
         glassPane.appendChild(state.transientGridState.currentSlotMarker)
       );
@@ -206,13 +195,12 @@ function go() {
   });
 
   mouseUps.subscribe((e) => {
-    let local = cp(state.transientGridState);
-    console.log('mouseUps ', local);
-    if (local.hasOwnProperty('lastMouseOver')) {
+    console.log('mouseUps ', state.transientGridState);
+    if (state.transientGridState) {
       addSlot({
-        first: local.lastMouseDown,
-        last: local.lastMouseOver,
-        node: local.currentSlotMarker,
+        first: state.transientGridState.lastMouseDown,
+        last: state.transientGridState.lastMouseOver,
+        node: state.transientGridState.currentSlotMarker,
       });
     }
 
@@ -270,8 +258,6 @@ function go() {
         };
         console.log(evt, state.baseGrid);
         resetStateForBaseGridChange();
-        // state.baseGrid = Number(evt.target.value);
-        // resetStateForBaseGridChange();
       }
     );
   }, 10);

@@ -25,11 +25,11 @@ function getTemplate() {
         position:relative;
       }
       :host{ pointer-events:auto;}
-      .tl,.tr,.br,.bl{position:absolute;background-color:#333;}
-      .tl{top:0;left:0;height:20px;width:20px;}
-      .tr{top:0;right:0;height:20px;width:20px;}
-      .bl{bottom:0;left:0;height:20px;width:20px;}
-      .br{bottom:0;right:0;height:20px;width:20px;}
+      .tl,.tr,.br,.bl{position:absolute;background-color:#333;height:20px;width:20px;}
+      .tl{top:0;left:0;}
+      .tr{top:0;right:0;}
+      .bl{bottom:0;left:0;}
+      .br{bottom:0;right:0;}
     </style>
     <div class='slot-block-inner' style='height:100%;'>
         <div class="tl"></div>
@@ -199,7 +199,14 @@ class SlotBlock extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['data-column', 'data-row', 'data-slot-id', 'data-uuid'];
+    return [
+      'data-column',
+      'data-row',
+      'data-slot-id',
+      'data-uuid',
+      'data-col-span',
+      'data-row-span',
+    ];
   }
 
   attributeChangedCallback(name, oldVal, newVal) {
@@ -221,6 +228,14 @@ class SlotBlock extends HTMLElement {
     return parseInt(this.getAttribute('data-column'));
   }
 
+  get colSpan() {
+    return parseInt(this.getAttribute('data-col-span'));
+  }
+
+  get rowSpan() {
+    return parseInt(this.getAttribute('data-row-span'));
+  }
+
   get row() {
     return parseInt(this.getAttribute('data-row'));
   }
@@ -239,6 +254,8 @@ class SlotBlock extends HTMLElement {
       row: this.row,
       column: this.column,
       uuid: this.uuid,
+      colSpan: this.colSpan,
+      rowSpan: this.rowSpan,
       shape: getBoundingClientRect(this),
     };
   }
@@ -278,11 +295,10 @@ class SlotBlock extends HTMLElement {
   onDelete(evt) {
     evt.preventDefault();
     evt.stopPropagation();
-    console.log('DELETE');
     this.dispatchEvent(
       new CustomEvent('delete_slot', {
         bubbles: true,
-        detail: { row: this.row, column: this.column },
+        detail: { row: this.row, column: this.column, uuid: this.uuid },
       })
     );
   }
