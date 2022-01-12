@@ -34,12 +34,6 @@ function go() {
 
   console.log(state);
 
-  // function getStyleForSlot(slot) {
-  //   if (slot != null) {
-  //     return `grid-row: ${slot.row} / span ${slot.rowSpan}; grid-column: ${slot.col} / span ${slot.colSpan};`;
-  //   }
-  //   return '';
-  // }
 
   function updateSlotBlock(node, obj) {
     let props = cp(obj);

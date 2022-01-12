@@ -53,6 +53,13 @@ const shape = function (top, left, bottom, right) {
   };
 };
 
+function getStyleForSlot(slot) {
+  if (slot != null) {
+    return `grid-row: ${slot.row} / span ${slot.rowSpan}; grid-column: ${slot.col} / span ${slot.colSpan};`;
+  }
+  return '';
+}
+
 const shapeToCSSString = (shape) => {
   if (!shape) {
     return '';
@@ -99,4 +106,5 @@ export {
   isTagTarget,
   reifyTemplate,
   dispatchEvent,
+  getStyleForSlot,
 };
