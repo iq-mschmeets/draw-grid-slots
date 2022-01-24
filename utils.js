@@ -83,7 +83,11 @@ const reifyTemplate = (domId) => {
   return document.getElementById(domId).content.cloneNode(true);
 };
 
-function isEmpty(obj) {
+const isNull = (obj) => {
+  return typeof obj == 'undefined' || obj == null;
+};
+
+const isEmpty = (obj) => {
   if (isNull(obj)) {
     return true;
   }
@@ -91,7 +95,7 @@ function isEmpty(obj) {
     return obj.length == 0;
   }
   return false;
-}
+};
 
 const dispatchEvent = (evtName, node, payload) => {
   node.dispatchEvent(
