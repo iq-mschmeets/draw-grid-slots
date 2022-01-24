@@ -28,18 +28,24 @@ function go() {
   const parent = document.getElementById('grid-container');
   const glassPane = document.getElementById('glass-pane');
 
-  let state = new GridState();
+  let state = null;
+  try {
+    state = new GridState().readFromStorage();
+  } catch (er) {
+    console.error(er);
+  }
+
   state.parentX = getGridObject(parent).x;
   state.parentY = getGridObject(parent).y;
 
   console.log(state);
-
 
   function updateSlotBlock(node, obj) {
     let props = cp(obj);
 
     if (props.first && props.last) {
       const str = getSlotStyleForGlassPane(state.parentX, state.parentY, props);
+      console.log('updateSlotBlock ', str);
       requestAnimationFrame(() => {
         if (str) {
           node.setAttribute('style', str);
@@ -64,7 +70,7 @@ function go() {
       parentX: state.parentX,
       parentY: state.parentY,
     });
-
+    console.log('renderSlotBlock ', obj, node);
     return updateSlotBlock(node, obj);
   }
 
@@ -149,8 +155,22 @@ function go() {
         evt.offsetX,
         evt.offsetY
       );
+      // state.transientGridState.lastMouseOver = getGridObject(
+      //   evt.target,
+      //   evt.offsetX,
+      //   evt.offsetY
+      // );
+
       return evt;
     }),
+    // tap(() => {
+    //   renderSlotBlock({
+    //     first: state.transientGridState.lastMouseDown,
+    //     last: state.transientGridState.lastMouseOver,
+    //     slotId: state.slots.length,
+    //     uuid: uuid(),
+    //   });
+    // }),
     switchMap((evt) => {
       return mouseOvers.pipe(
         debounceTime(20),

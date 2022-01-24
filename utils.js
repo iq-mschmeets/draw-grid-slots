@@ -83,6 +83,16 @@ const reifyTemplate = (domId) => {
   return document.getElementById(domId).content.cloneNode(true);
 };
 
+function isEmpty(obj) {
+  if (isNull(obj)) {
+    return true;
+  }
+  if (obj.length) {
+    return obj.length == 0;
+  }
+  return false;
+}
+
 const dispatchEvent = (evtName, node, payload) => {
   node.dispatchEvent(
     new CustomEvent(evtName, {

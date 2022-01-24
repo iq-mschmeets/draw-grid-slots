@@ -1,3 +1,5 @@
+import { uuid, isEmpty } from './utils.js';
+
 class TransientGridState {
   constructor() {
     this._lastMouseDown;
@@ -81,7 +83,36 @@ class GridState {
   deleteSlot(uuid) {
     this._slots = this._slots.filter((sl) => sl.uuid === uuid);
   }
-  writeToStorage() {}
+  resetTransientState() {
+    this._transientGridState = new TransientGridState();
+  }
+  toJSON() {
+    return {
+      slots: this.slots.slice(),
+      slotNodes: this.slotNodes.slice(),
+      baseGrid: this.baseGrid,
+      gridGap: this.gridGap,
+      parentX: this.parentX,
+      parentY: this.parentY,
+    };
+  }
+  writeToStorage() {
+    localStorage.setItem('gridState', JSON.stringify(this.toJSON()));
+  }
+  readFromStorage() {
+    let data = localStorage.getItem('gridState');
+    console.log(data, isEmpty(data));
+    if (!isEmpty(data)) {
+      data = JSON.parse(data);
+      this.slots = data.slots;
+      this.slotNodes = data.slotNodes;
+      this.baseGrid = data.baseGrid;
+      this.gridGap = data.gridGap;
+      this.parentY = data.parentY;
+      this.parentX = data.parentX;
+    }
+    return this;
+  }
 }
 
 export { GridState };
