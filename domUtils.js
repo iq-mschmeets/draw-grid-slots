@@ -62,6 +62,7 @@ const getGridObject = (sl, clX, clY) => {
 };
 
 const getSlotNode = (r, c) => {
+  console.log('getSlotNode %s, %s', r, c);
   return document.querySelector(
     `div.slot[data-column="${c}"][data-row="${r}"]`
   );
@@ -81,10 +82,18 @@ const bottomRight = (parentX, parentY, first, last) => {
   };
 };
 
-const getSlotStyleForGlassPane = (parentX, parentY, obj) => {
-  let firstNode = getGridObject(getSlotNode(obj.first.row, obj.first.col));
-  let lastNode = getGridObject(getSlotNode(obj.last.row, obj.last.col));
-
+const getSlotStyleForGlassPane = (
+  parentX,
+  parentY,
+  row,
+  col,
+  rowSpan,
+  colSpan
+) => {
+  let firstNode = getGridObject(getSlotNode(row, col));
+  console.log('for second %s, %s', row + rowSpan, col + colSpan);
+  let lastNode = getGridObject(getSlotNode(row + rowSpan, col + colSpan));
+  console.log(firstNode, lastNode);
   if (!firstNode || !lastNode) {
     return null;
   }

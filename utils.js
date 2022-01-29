@@ -83,6 +83,16 @@ const reifyTemplate = (domId) => {
   return document.getElementById(domId).content.cloneNode(true);
 };
 
+const settableProp = (name, value, parent) => {
+  return {
+    value: value,
+    name: name,
+    parent: parent,
+    set: (newVal) => (parent[name] = newVal),
+    get: () => value,
+  };
+};
+
 const isNull = (obj) => {
   return typeof obj == 'undefined' || obj == null;
 };
@@ -121,4 +131,7 @@ export {
   reifyTemplate,
   dispatchEvent,
   getStyleForSlot,
+  isNull,
+  isEmpty,
+  settableProp,
 };

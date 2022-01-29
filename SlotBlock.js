@@ -6,6 +6,7 @@ import {
   shapeToCSSString,
   isTagTarget,
   dispatchEvent,
+  settableProp,
 } from './utils.js';
 
 function getTemplate() {
@@ -251,11 +252,11 @@ class SlotBlock extends HTMLElement {
   get state() {
     return {
       slotId: this.slotId,
-      row: this.row,
-      column: this.column,
+      row: settableProp('row', this.row, this),
+      column: settableProp('column', this.column, this),
       uuid: this.uuid,
-      colSpan: this.colSpan,
-      rowSpan: this.rowSpan,
+      colSpan: settableProp('colSpan', this.colSpan, this),
+      rowSpan: settableProp('rowSpan', this.rowSpan, this),
       shape: getBoundingClientRect(this),
     };
   }
@@ -339,7 +340,14 @@ class SlotBlock extends HTMLElement {
 
       this.pointerState.reset();
 
-      dispatchEvent('action', this, this.state);
+      dispatchEvent(
+        'action',
+        this,
+        Object.assign(
+          { type: 'slot-block-resize', slotBlock: this },
+          this.state
+        )
+      );
     }
   }
 

@@ -41,37 +41,56 @@ function go() {
   console.log(state);
 
   function updateSlotBlock(node, obj) {
-    let props = cp(obj);
-
-    if (props.first && props.last) {
-      const str = getSlotStyleForGlassPane(state.parentX, state.parentY, props);
-      console.log('updateSlotBlock ', str);
-      requestAnimationFrame(() => {
-        if (str) {
-          node.setAttribute('style', str);
-        }
-      });
+    if (obj.row && obj.col && obj.rowSpan && obj.colSpan) {
+      const str = getSlotStyleForGlassPane(
+        state.parentX,
+        state.parentY,
+        obj.row,
+        obj.col,
+        obj.rowSpan,
+        obj.colSpan
+      );
+      console.log('updateSlotBlock %o, %s', obj, str);
+      // requestAnimationFrame(() => {
+      if (str) {
+        node.setAttribute('style', str);
+      }
+      // });
     }
     return node;
   }
 
-  function renderSlotBlock(obj) {
-    const node = csb({
+  function xformSlotDataObj(obj) {
+    return {
       row: parseInt(obj.first.row),
       col: parseInt(obj.first.col),
-      rowSpan: Math.max(
-        parseInt(obj.last.row) - parseInt(obj.first.row) + 1,
-        1
-      ),
-      colSpan: Math.max(
-        parseInt(obj.last.col) - parseInt(obj.first.col) + 1,
-        1
-      ),
+      rowSpan: Math.max(parseInt(obj.last.row) - parseInt(obj.first.row), 1),
+      colSpan: Math.max(parseInt(obj.last.col) - parseInt(obj.first.col), 1),
+      slotId: obj.slotId,
+      uuid: obj.uuid,
       parentX: state.parentX,
       parentY: state.parentY,
-    });
-    console.log('renderSlotBlock ', obj, node);
-    return updateSlotBlock(node, obj);
+    };
+  }
+
+  function renderSlotBlock(obj) {
+    let dat = {};
+    if (obj.first) {
+      dat = xformSlotDataObj(obj);
+    } else {
+      dat.row = obj.row;
+      dat.col = obj.column;
+      dat.rowSpan = obj.rowSpan;
+      dat.colSpan = obj.colSpan;
+      dat.uuid = obj.uuid;
+      dat.slotId = obj.slotId;
+      dat.parentX = state.parentX;
+      dat.parentY = state.parentY;
+    }
+    const node = csb(dat);
+    console.log('renderSlotBlock %o, %o', dat, node);
+
+    return updateSlotBlock(node, dat);
   }
 
   function addSlot(obj) {
@@ -124,6 +143,12 @@ function go() {
     // attributes of that node.
     // The current state of the slot is available in the evt.detail.
     console.log('Action Event: ', evt);
+    if (evt.detail.type === 'slot-block-resize') {
+      // Find the corresponding grid cells, based on the dimensions
+      // of the evt.details, then update the slot-block for new
+      // row, col, rowSpan, colSpan props.
+      state.writeToStorage();
+    }
   });
 
   const baseGridGap = fromEvent(
@@ -216,6 +241,7 @@ function go() {
         last: state.transientGridState.lastMouseOver,
         node: state.transientGridState.currentSlotMarker,
       });
+      state.writeToStorage();
     }
 
     state.transientGridState.reset();
@@ -226,6 +252,9 @@ function go() {
   ////////////////////////////////////////////////////////
 
   renderGrid(parent, state.baseGrid.rows, state.baseGrid.cols, state.gridGap);
+  state.slots.forEach((sl) => {
+    glassPane.appendChild(renderSlotBlock(sl));
+  });
 
   ////////////////////////////////////////////////////////
   // Begin add dummy content.
@@ -240,17 +269,17 @@ function go() {
   filters.templateId = 'filter-section';
   filters.headerText = 'Filters';
 
-  let folders = new ContentPlaceholder();
-  folders.templateId = 'content-sections';
-  folders.headerText = 'Folders';
+  // let folders = new ContentPlaceholder();
+  // folders.templateId = 'content-sections';
+  // folders.headerText = 'Folders';
 
-  let summaries = new ContentPlaceholder();
-  summaries.templateId = 'content-sections';
-  summaries.headerText = 'Summaries';
+  // let summaries = new ContentPlaceholder();
+  // summaries.templateId = 'content-sections';
+  // summaries.headerText = 'Summaries';
 
-  let markups = new ContentPlaceholder();
-  markups.templateId = 'content-sections';
-  markups.headerText = 'Markups';
+  // let markups = new ContentPlaceholder();
+  // markups.templateId = 'content-sections';
+  // markups.headerText = 'Markups';
 
   let dimSel = new DimensionSelector();
   dimSel.setAttribute('id', 'base-grid-selector');

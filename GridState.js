@@ -82,6 +82,7 @@ class GridState {
   }
   deleteSlot(uuid) {
     this._slots = this._slots.filter((sl) => sl.uuid === uuid);
+    this.writeToStorage();
   }
   resetTransientState() {
     this._transientGridState = new TransientGridState();
@@ -104,12 +105,12 @@ class GridState {
     console.log(data, isEmpty(data));
     if (!isEmpty(data)) {
       data = JSON.parse(data);
-      this.slots = data.slots;
-      this.slotNodes = data.slotNodes;
-      this.baseGrid = data.baseGrid;
-      this.gridGap = data.gridGap;
-      this.parentY = data.parentY;
-      this.parentX = data.parentX;
+      this._slots = data.slots;
+      this._slotNodes = data.slotNodes;
+      this._baseGrid = data.baseGrid;
+      this._gridGap = data.gridGap;
+      this._parentY = data.parentY;
+      this._parentX = data.parentX;
     }
     return this;
   }
