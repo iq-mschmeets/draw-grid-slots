@@ -286,9 +286,9 @@ function go() {
 
   requestAnimationFrame(() => {
     contentContainer.appendChild(filters);
-    contentContainer.appendChild(folders);
-    contentContainer.appendChild(summaries);
-    contentContainer.appendChild(markups);
+    // contentContainer.appendChild(folders);
+    // contentContainer.appendChild(summaries);
+    // contentContainer.appendChild(markups);
     document.getElementById('dim-sel-label').appendChild(dimSel);
   });
 
